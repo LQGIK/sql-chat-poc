@@ -13,7 +13,7 @@ interface Message {
   content: string;
   role: 'user' | 'assistant';
   data?: {
-    type: 'table' | 'bar_chart' | 'line_chart';
+    type: 'table' | 'bar_chart' | 'line_chart' | 'pie_chart' | 'area_chart' | 'scatter_plot' | 'heatmap';
     [key: string]: any;
   };
 }
