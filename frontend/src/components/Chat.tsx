@@ -48,14 +48,29 @@ export function Chat() {
       let content = data.reply;
       let componentData = null;
 
-      try {
-        const parsed = JSON.parse(data.reply);
-        if (parsed.text && parsed.component) {
-          content = parsed.text;
-          componentData = parsed.component;
+      // Try to extract and parse JSON from markdown code blocks
+      const jsonMatch = content.match(/```(?:json)?\s*([\s\S]*?)```/);
+      if (jsonMatch) {
+        try {
+          const parsed = JSON.parse(jsonMatch[1].trim());
+          if (parsed.text && parsed.component) {
+            content = parsed.text;
+            componentData = parsed.component;
+          }
+        } catch {
+          // Failed to parse JSON, use plain text
         }
-      } catch {
-        // Response is plain text, not JSON
+      } else {
+        // Try parsing the whole response as JSON
+        try {
+          const parsed = JSON.parse(content);
+          if (parsed.text && parsed.component) {
+            content = parsed.text;
+            componentData = parsed.component;
+          }
+        } catch {
+          // Response is plain text, not JSON
+        }
       }
 
       setMessages([
