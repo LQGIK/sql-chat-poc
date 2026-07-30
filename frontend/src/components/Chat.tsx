@@ -1,4 +1,3 @@
-import { useChat } from 'ai/react';
 import { useState } from 'react';
 import { DataTable } from './DataTable';
 import { BarChart as BarChartComponent } from './BarChart';
@@ -16,28 +15,30 @@ interface Message {
 }
 
 export function Chat() {
-  const { messages, input, handleInputChange, handleSubmit } = useChat({
-    api: 'http://localhost:5000/api/chat',
-  });
-
-  const [parsedMessages, setParsedMessages] = useState<Message[]>([]);
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [input, setInput] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleChatSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    if (!input.trim()) return;
+
     const userMessage = input;
-    setParsedMessages([
-      ...parsedMessages,
+    const newMessages: Message[] = [
+      ...messages,
       { id: Date.now().toString(), content: userMessage, role: 'user' },
-    ]);
+    ];
+    setMessages(newMessages);
+    setInput('');
+    setIsLoading(true);
 
     try {
       const response = await fetch('http://localhost:5000/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          messages: [...parsedMessages.map(m => ({ role: m.role, content: m.content })),
-                     { role: 'user', content: userMessage }],
+          messages: newMessages.map(m => ({ role: m.role, content: m.content })),
         }),
       });
 
@@ -57,9 +58,8 @@ export function Chat() {
         // Response is plain text, not JSON
       }
 
-      setParsedMessages([
-        ...parsedMessages,
-        { id: Date.now().toString(), content: userMessage, role: 'user' },
+      setMessages([
+        ...newMessages,
         {
           id: (Date.now() + 1).toString(),
           content,
@@ -69,15 +69,23 @@ export function Chat() {
       ]);
     } catch (error) {
       console.error('Chat error:', error);
+      setMessages([
+        ...newMessages,
+        {
+          id: (Date.now() + 1).toString(),
+          content: 'Sorry, there was an error communicating with the server.',
+          role: 'assistant',
+        },
+      ]);
+    } finally {
+      setIsLoading(false);
     }
-
-    handleInputChange({ target: { value: '' } } as any);
   };
 
   return (
     <div className="chat-container">
       <div className="chat-messages">
-        {parsedMessages.map((message) => (
+        {messages.map((message) => (
           <div key={message.id} className={`message ${message.role}`}>
             <div className="message-content">
               {message.content}
@@ -97,16 +105,20 @@ export function Chat() {
             )}
           </div>
         ))}
+        {isLoading && <div className="message assistant"><div className="message-content">Thinking...</div></div>}
       </div>
 
       <form onSubmit={handleChatSubmit} className="chat-input-form">
         <input
           value={input}
-          onChange={handleInputChange}
+          onChange={(e) => setInput(e.target.value)}
           placeholder="Ask about the roofing database..."
           className="chat-input"
+          disabled={isLoading}
         />
-        <button type="submit" className="chat-submit">Send</button>
+        <button type="submit" className="chat-submit" disabled={isLoading}>
+          {isLoading ? 'Sending...' : 'Send'}
+        </button>
       </form>
     </div>
   );
