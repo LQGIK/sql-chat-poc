@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Roofing Supply Chat POC</title>
+<style>
+  :root {
+    --bg: #0f1115;
+    --panel: #171a21;
+    --border: #2a2f3a;
+    --text: #e7e9ee;
+    --muted: #8b93a3;
+    --accent: #d97757;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    display: flex;
+    justify-content: center;
+    height: 100vh;
+  }
+  .app {
+    width: 100%;
+    max-width: 780px;
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    padding: 16px;
+  }
+  h1 {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--muted);
+    margin: 0 0 12px 0;
+  }
+  h1 span { color: var(--accent); }
+  .messages {
+    flex: 1;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    padding: 8px 4px;
+  }
+  .msg { max-width: 90%; }
+  .msg.user { align-self: flex-end; }
+  .msg.assistant { align-self: flex-start; }
+  .bubble {
+    padding: 10px 14px;
+    border-radius: 12px;
+    line-height: 1.45;
+    white-space: pre-wrap;
+  }
+  .user .bubble { background: var(--accent); color: #1a1310; }
+  .assistant .bubble { background: var(--panel); border: 1px solid var(--border); }
+  .sql-trace {
+    margin-top: 6px;
+    font-size: 12px;
+    color: var(--muted);
+    background: #10131a;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 10px;
+  }
+  .sql-trace code { color: #9fd6a0; word-break: break-word; }
+  form {
+    display: flex;
+    gap: 8px;
+    margin-top: 12px;
+    border-top: 1px solid var(--border);
+    padding-top: 12px;
+  }
+  input[type=text] {
+    flex: 1;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 10px 12px;
+    border-radius: 8px;
+    font-size: 14px;
+  }
+  button {
+    background: var(--accent);
+    color: #1a1310;
+    border: none;
+    padding: 10px 18px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  button:disabled { opacity: 0.5; cursor: default; }
+  .hint { color: var(--muted); font-size: 12px; margin-top: 6px; }
+</style>
+</head>
+<body>
+<div class="app">
+  <h1>Roofing Supply Chat <span>· SQL POC</span></h1>
+  <div class="messages" id="messages"></div>
+  <form id="form">
+    <input type="text" id="input" placeholder="e.g. Which orders used solar tiles, and which company made them?" autocomplete="off" />
+    <button id="send" type="submit">Send</button>
+  </form>
+  <div class="hint">Try: "What's on order 5?" · "Which suppliers make solar tiles?" · "List pending orders with customer names"</div>
+</div>
+
+<script>
+const messagesEl = document.getElementById('messages');
+const form = document.getElementById('form');
+const input = document.getElementById('input');
+const sendBtn = document.getElementById('send');
+
+let history = [];
+
+function addBubble(role, text, queries) {
+  const wrap = document.createElement('div');
+  wrap.className = 'msg ' + role;
+  const bubble = document.createElement('div');
+  bubble.className = 'bubble';
+  bubble.textContent = text;
+  wrap.appendChild(bubble);
+
+  if (queries && queries.length) {
+    const trace = document.createElement('div');
+    trace.className = 'sql-trace';
+    trace.innerHTML = queries.map(q =>
+      `<code>${q.query}</code> — ${q.row_count} row(s)`
+    ).join('<br/>');
+    wrap.appendChild(trace);
+  }
+
+  messagesEl.appendChild(wrap);
+  messagesEl.scrollTop = messagesEl.scrollHeight;
+}
+
+form.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const text = input.value.trim();
+  if (!text) return;
+
+  addBubble('user', text);
+  history.push({ role: 'user', content: text });
+  input.value = '';
+  sendBtn.disabled = true;
+
+  try {
+    const res = await fetch('/api/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ messages: history }),
+    });
+    const data = await res.json();
+    addBubble('assistant', data.reply, data.queries);
+    history.push({ role: 'assistant', content: data.reply });
+  } catch (err) {
+    addBubble('assistant', 'Error talking to the server: ' + err.message);
+  } finally {
+    sendBtn.disabled = false;
+  }
+});
+</script>
+</body>
+</html>
