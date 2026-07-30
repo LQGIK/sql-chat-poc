@@ -150,3 +150,83 @@
 .chat-submit:active {
   background: #004085;
 }
+
+.heatmap {
+  background: white;
+  padding: 20px;
+  border-radius: 4px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  overflow-x: auto;
+}
+
+.heatmap h3 {
+  margin: 0 0 16px 0;
+  color: #333;
+}
+
+.heatmap-grid {
+  display: inline-block;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.heatmap-row {
+  display: flex;
+}
+
+.heatmap-cell {
+  min-width: 60px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-right: 1px solid #ddd;
+  border-bottom: 1px solid #ddd;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.heatmap-row:last-child .heatmap-cell {
+  border-bottom: none;
+}
+
+.heatmap-cell:last-child {
+  border-right: none;
+}
+
+.heatmap-cell.corner {
+  background: #f8f9fa;
+}
+
+.heatmap-cell.header-cell {
+  background: #f8f9fa;
+  font-weight: 600;
+  color: #495057;
+}
+
+.heatmap-row.header .heatmap-cell {
+  font-weight: 600;
+  color: #495057;
+}
+
+.heatmap-legend {
+  display: flex;
+  gap: 20px;
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid #eee;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+}
+
+.legend-color {
+  width: 16px;
+  height: 16px;
+  border-radius: 2px;
+}

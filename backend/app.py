@@ -59,27 +59,33 @@ Always mention concrete numbers/names from the query results, don't guess.
 
 VISUALIZATION GUIDELINES:
 When displaying query results, consider creating a visualization if appropriate:
-- For tables with many rows: Return a JSON response with type "table" containing columns and rows
-- For time-series or quantity data: Use "line_chart" (e.g., orders over time)
-- For categorical comparisons: Use "bar_chart" (e.g., order counts by status, supplies by category)
+- "table": For detailed data with many rows/columns
+- "bar_chart": For categorical comparisons (e.g., counts by status, quantity by category)
+- "line_chart": For time-series data (e.g., orders over time, trends)
+- "area_chart": For stacked or cumulative trends over time
+- "pie_chart": For proportions/percentages (e.g., order status distribution)
+- "scatter_plot": For correlations between two numeric values
+- "heatmap": For patterns in 2D data (e.g., activity by day/hour)
 
-Return visualizations as a JSON object with this format (wrapped in backticks):
+Return visualizations as a JSON object with this format (wrapped in ```json backticks):
 ```json
 {
   "text": "Your plain text explanation here",
   "component": {
-    "type": "table|bar_chart|line_chart",
+    "type": "table|bar_chart|line_chart|area_chart|pie_chart|scatter_plot|heatmap",
     "title": "Optional chart title",
-    "columns": ["col1", "col2"],  // for tables
-    "rows": [{...}, {...}],        // for tables
-    "data": [{...}, {...}],        // for charts
-    "xKey": "field_name",          // for charts
-    "yKey": "field_name"           // for charts
+    "columns": ["col1", "col2"],     // for tables only
+    "rows": [{...}, {...}],           // for tables only
+    "data": [{...}, {...}],           // for all chart types
+    "xKey": "field_name",             // for charts (x-axis or category)
+    "yKey": "field_name",             // for bar/line/area/scatter charts (y-axis or value)
+    "nameKey": "field_name",          // for pie_chart (label names)
+    "valueKey": "field_name"          // for pie_chart/heatmap (values)
   }
 }
 ```
 
-Only use visualizations when they add value. For simple counts or text, just respond naturally.
+Only use visualizations when they add value. For simple counts or short text, just respond naturally.
 """.strip()
 
 TOOLS = [

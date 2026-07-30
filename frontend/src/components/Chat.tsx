@@ -2,6 +2,10 @@ import { useState } from 'react';
 import { DataTable } from './DataTable';
 import { BarChart as BarChartComponent } from './BarChart';
 import { LineChart as LineChartComponent } from './LineChart';
+import { PieChart as PieChartComponent } from './PieChart';
+import { AreaChart as AreaChartComponent } from './AreaChart';
+import { ScatterPlot as ScatterPlotComponent } from './ScatterPlot';
+import { Heatmap as HeatmapComponent } from './Heatmap';
 import './Chat.css';
 
 interface Message {
@@ -115,6 +119,18 @@ export function Chat() {
                 )}
                 {message.data.type === 'line_chart' && (
                   <LineChartComponent data={message.data} />
+                )}
+                {message.data.type === 'pie_chart' && (
+                  <PieChartComponent data={message.data} />
+                )}
+                {message.data.type === 'area_chart' && (
+                  <AreaChartComponent data={message.data} />
+                )}
+                {message.data.type === 'scatter_plot' && (
+                  <ScatterPlotComponent data={message.data} />
+                )}
+                {message.data.type === 'heatmap' && (
+                  <HeatmapComponent data={message.data} />
                 )}
               </div>
             )}
